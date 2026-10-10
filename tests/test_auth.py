@@ -36,3 +36,21 @@ def test_me_requires_token(client):
         client.get("/auth/me", headers={"Authorization": "Bearer bad"}).status_code
         == 401
     )
+
+
+def test_email_is_normalized(client):
+    client.post("/auth/register", json={**CREDS, "email": "  Teacher@School.KZ "})
+    assert client.post("/auth/login", json=CREDS).status_code == 200
+    r = client.post("/auth/register", json=CREDS)
+    assert r.status_code == 409
+
+
+def test_invalid_email_is_rejected(client):
+    r = client.post("/auth/register", json={**CREDS, "email": "not-an-email"})
+    assert r.status_code == 422
+
+
+def test_logout_invalidates_token(client):
+    headers = auth_headers(client)
+    assert client.post("/auth/logout", headers=headers).status_code == 204
+    assert client.get("/auth/me", headers=headers).status_code == 401

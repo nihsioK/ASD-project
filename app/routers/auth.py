@@ -29,6 +29,14 @@ def login(data: UserCredentials, db: Annotated[Session, Depends(get_db)]) -> Tok
     return Token(access_token=token)
 
 
+@router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
+def logout(
+    user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[Session, Depends(get_db)],
+) -> None:
+    user_repo.clear_token(db, user)
+
+
 @router.get("/me")
 def me(user: Annotated[User, Depends(get_current_user)]) -> UserOut:
     return user

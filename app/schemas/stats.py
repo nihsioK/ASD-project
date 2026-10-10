@@ -12,3 +12,9 @@ class Summary(BaseModel):
     stdev: float
     min: float
     max: float
+
+
+class SubjectStats(BaseModel):
+    summary: Summary
+    marks: dict[int, int] = Field(description="Number of students per mark 5, 4, 3, 2")
+    pass_rate: float = Field(description="Share of students with mark 3 or higher")

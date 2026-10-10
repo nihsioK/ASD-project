@@ -23,3 +23,8 @@ def create(db: Session, email: str, password_hash: str) -> User:
 def set_token(db: Session, user: User, token: str) -> None:
     user.token = token
     db.commit()
+
+
+def clear_token(db: Session, user: User) -> None:
+    user.token = None
+    db.commit()

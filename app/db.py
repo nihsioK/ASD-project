@@ -1,8 +1,18 @@
+import os
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
-# ponytail: local SQLite file, switch to PostgreSQL via DATABASE_URL when deployed for real
-engine = create_engine("sqlite:///./app.db", connect_args={"check_same_thread": False})
+# PostgreSQL in Docker Compose, a local SQLite file when running without Docker
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./app.db")
+
+
+def make_engine(url: str):
+    connect_args = {"check_same_thread": False} if url.startswith("sqlite") else {}
+    return create_engine(url, connect_args=connect_args)
+
+
+engine = make_engine(DATABASE_URL)
 SessionLocal = sessionmaker(bind=engine)
 
 

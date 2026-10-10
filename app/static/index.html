@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Teacher CRM</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <section id="auth-view" class="auth" hidden>
+    <form id="auth-form" class="card auth-card">
+      <h1>Teacher CRM</h1>
+      <p class="muted">Students, scores, statistics and lesson plans</p>
+      <label>Email <input name="email" type="email" required autocomplete="username"></label>
+      <label>Password <input name="password" type="password" required minlength="8" autocomplete="current-password"></label>
+      <div class="row">
+        <button type="submit" data-action="login">Log in</button>
+        <button type="submit" data-action="register" class="secondary">Register</button>
+      </div>
+      <p class="error" id="auth-error"></p>
+      <p class="muted small">Demo account: demo@school.kz / demo12345</p>
+    </form>
+  </section>
+
+  <div id="app-view" hidden>
+    <header class="topbar">
+      <strong>Teacher CRM</strong>
+      <nav>
+        <button class="tab" data-tab="students">Students</button>
+        <button class="tab" data-tab="subjects">Subjects</button>
+        <button class="tab" data-tab="plans">Lesson plans</button>
+      </nav>
+      <span class="spacer"></span>
+      <span id="user-email" class="muted"></span>
+      <button id="logout" class="secondary">Log out</button>
+    </header>
+
+    <main>
+      <p class="error" id="app-error"></p>
+
+      <section id="tab-students" class="tab-panel">
+        <form id="student-form" class="card inline-form">
+          <input name="full_name" placeholder="Full name" required>
+          <input name="class_name" placeholder="Class, e.g. 9A" required maxlength="10">
+          <input name="parent_phone" placeholder="Parent phone">
+          <input name="notes" placeholder="Notes">
+          <button type="submit">Add student</button>
+        </form>
+        <div class="card">
+          <table>
+            <thead><tr><th>Name</th><th>Class</th><th>Parent phone</th><th>Notes</th><th></th></tr></thead>
+            <tbody id="students-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="tab-subjects" class="tab-panel two-columns">
+        <aside class="card">
+          <h2>Subjects</h2>
+          <ul id="subject-list" class="list"></ul>
+          <form id="subject-form" class="stack">
+            <input name="name" placeholder="Subject name" required>
+            <input name="grade" type="number" min="1" max="11" placeholder="Grade 1-11" required>
+            <button type="submit">Add subject</button>
+          </form>
+        </aside>
+        <div id="subject-detail" class="stack"></div>
+      </section>
+
+      <section id="tab-plans" class="tab-panel two-columns">
+        <aside class="card">
+          <h2>Generate a KSP</h2>
+          <form id="plan-form" class="stack">
+            <select name="subject_id" id="plan-subject" required></select>
+            <input name="topic" placeholder="Lesson topic" required minlength="3">
+            <textarea name="objectives" rows="3" placeholder="Learning objectives (optional)"></textarea>
+            <button type="submit">Generate</button>
+          </form>
+          <h2>Saved plans</h2>
+          <ul id="plan-list" class="list"></ul>
+        </aside>
+        <div class="card"><pre id="plan-content" class="plan">Select or generate a plan.</pre></div>
+      </section>
+    </main>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>

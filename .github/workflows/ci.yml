@@ -6,33 +6,93 @@ on:
   pull_request:
 
 jobs:
-  test:
+  lint:
+    name: Lint & format (Ruff)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6
-      - run: uv sync --locked
-      - run: uv run ruff check .
-      - run: uv run pytest
+      - name: Install locked dependencies
+        run: uv sync --locked
+      - name: Ruff lint
+        run: uv run ruff check .
+      - name: Ruff format check
+        run: uv run ruff format --check .
+
+  test:
+    name: Tests (pytest + PostgreSQL)
+    needs: lint
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U test"
+          --health-interval 2s
+          --health-timeout 5s
+          --health-retries 15
+    env:
+      TEST_DATABASE_URL: postgresql+psycopg://test:test@localhost:5432/test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - name: Install locked dependencies
+        run: uv sync --locked
+      - name: Run tests with coverage (min 90%)
+        run: uv run pytest --cov=app --cov-report=term-missing --cov-fail-under=90
+
+  build:
+    name: Build Docker image
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Build image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          tags: app:${{ github.sha }}
+          outputs: type=docker,dest=${{ runner.temp }}/image.tar
+      - name: Save image as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-image
+          path: ${{ runner.temp }}/image.tar
+          retention-days: 1
 
   publish:
-    # CD: only after tests pass on main, build the Docker image and push it to GHCR
-    needs: test
+    # CD: only on main, push exactly the image built and tested above
+    name: Publish to GHCR
+    needs: build
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
     steps:
-      - uses: actions/checkout@v4
-      # image names must be lowercase, the owner name may not be
-      - run: echo "IMAGE=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_ENV"
+      - name: Download image artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image
+          path: ${{ runner.temp }}
       - uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - uses: docker/build-push-action@v6
-        with:
-          push: true
-          tags: ${{ env.IMAGE }}:latest
+      - name: Push image (latest and commit SHA tags)
+        run: |
+          # image names must be lowercase, the owner name may not be
+          IMAGE="ghcr.io/${GITHUB_REPOSITORY,,}"
+          docker load --input "$RUNNER_TEMP/image.tar"
+          for tag in latest "$GITHUB_SHA"; do
+            docker tag "app:$GITHUB_SHA" "$IMAGE:$tag"
+            docker push "$IMAGE:$tag"
+          done
