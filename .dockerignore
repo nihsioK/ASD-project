@@ -1,0 +1,9 @@
+.git
+.venv
+.coverage
+__pycache__/
+report/
+reports/
+jenkins/
+tests/
+*.md
