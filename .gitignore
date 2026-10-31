@@ -13,3 +13,4 @@ report/
 app.db
 .coverage
 .env
+reports/

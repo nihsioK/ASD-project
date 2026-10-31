@@ -106,7 +106,27 @@ The pipeline is defined in [.github/workflows/ci.yml](.github/workflows/ci.yml) 
 
 Jobs 1-3 run on every push and pull request (CI); job 4 is continuous delivery.
 
-## Technology choices
+## Jenkins pipeline (Assignment 5)
+
+The same checks also run in a local Jenkins server defined in [Jenkinsfile](Jenkinsfile).
+
+```bash
+docker compose -f jenkins/docker-compose.yml up -d --build
+```
+
+Open http://localhost:8080. Jenkins is configured as code ([jenkins/casc.yaml](jenkins/casc.yaml)): it installs the plugins, skips the setup wizard and creates the `eduai` pipeline job for this repository.
+
+The pipeline checks GitHub every 2 minutes and runs on every new commit:
+
+1. **Install dependencies**: `uv sync --locked`.
+2. **Lint**: `ruff check` and `ruff format --check`.
+3. **Unit tests**: pytest with a JUnit report and at least 90 % coverage.
+4. **Build Docker image**: `eduai:<build number>` and `eduai:latest`.
+5. **Deploy to test server**: starts [deploy/docker-compose.test.yml](deploy/docker-compose.test.yml) (API and PostgreSQL) and checks `/health`; the test server runs at http://localhost:8081.
+
+Jenkins runs as root with the host Docker socket mounted, which is acceptable only for a local demo server.
+
+
 
 - **Python** is the standard language for scientific computing and data processing.
 - **FastAPI** gives request validation and OpenAPI docs with very little code.

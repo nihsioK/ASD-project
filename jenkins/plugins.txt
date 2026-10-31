@@ -1,0 +1,7 @@
+workflow-aggregator
+git
+junit
+pipeline-stage-view
+timestamper
+configuration-as-code
+job-dsl

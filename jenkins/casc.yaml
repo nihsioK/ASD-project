@@ -1,0 +1,34 @@
+jenkins:
+  systemMessage: "EduAI CI/CD - local Jenkins for Assignment 5"
+  numExecutors: 2
+  # local demo only: the port is bound to 127.0.0.1, so no login is required
+  authorizationStrategy: unsecured
+
+unclassified:
+  location:
+    url: http://localhost:8080/
+
+jobs:
+  - script: >
+      pipelineJob('eduai') {
+        description('EduAI: lint, unit tests, Docker image and deployment to the test server on every commit')
+        properties {
+          pipelineTriggers {
+            triggers {
+              pollSCM { scmpoll_spec('H/2 * * * *') }
+            }
+          }
+        }
+        definition {
+          cpsScm {
+            scm {
+              git {
+                remote { url('https://github.com/nihsioK/ASD-project.git') }
+                branch('*/main')
+              }
+            }
+            scriptPath('Jenkinsfile')
+            lightweight(true)
+          }
+        }
+      }
