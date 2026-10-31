@@ -126,6 +126,8 @@ The pipeline checks GitHub every 2 minutes and runs on every new commit:
 
 Jenkins runs as root with the host Docker socket mounted, which is acceptable only for a local demo server.
 
+Screenshots of the working pipeline are in [docs/jenkins](docs/jenkins).
+
 
 
 - **Python** is the standard language for scientific computing and data processing.
