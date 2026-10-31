@@ -9,7 +9,7 @@ It was built for Assignment 3 (Software Development and Integration) to demonstr
 ## Features
 
 - Registration and login with bearer tokens.
-- Students: full name, class, parent phone, notes.
+- Students: full name, class, parent phone, notes.s
 - Subjects with student scores in percent.
 - Statistics per subject: count, mean, median, standard deviation, min, max, marks 5/4/3/2 and pass rate.
 - Statistics for any series of measurements (`POST /stats`).
